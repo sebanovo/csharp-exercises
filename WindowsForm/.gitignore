@@ -1,0 +1,10 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Ignorar archivos de configuración de Visual Studio
+.vscode/
+bin/
+obj/
+
+# Ignorar archivos de salida de compilación
+/bin/
+/obj/
