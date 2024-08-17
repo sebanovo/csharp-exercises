@@ -139,4 +139,25 @@ public class ToDos
       Console.WriteLine("Entrada no válida.");
     }
   }
+
+  public int Pregunta1(int numero1, int numero2)
+  {
+    int resultado = 1;
+
+    while (numero1 > 0)
+    {
+      int d1 = numero1 % 10;
+      int copia2 = numero2;
+      while (copia2 > 0)
+      {
+        int d2 = copia2 % 10;
+        if (d1 == d2)
+        {
+          resultado = resultado * 10 + d1;
+        }
+      }
+      numero1 /= 10;
+    }
+    return 0;
+  }
 }
