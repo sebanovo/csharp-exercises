@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "firstopentk", "firstopentk.csproj", "{E4DE962F-AAD6-42DE-A547-24D5A93CD013}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "learnopentk", "learnopentk.csproj", "{148E490B-06D6-4A0B-A6A7-482620C0D954}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E4DE962F-AAD6-42DE-A547-24D5A93CD013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4DE962F-AAD6-42DE-A547-24D5A93CD013}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4DE962F-AAD6-42DE-A547-24D5A93CD013}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4DE962F-AAD6-42DE-A547-24D5A93CD013}.Release|Any CPU.Build.0 = Release|Any CPU
+		{148E490B-06D6-4A0B-A6A7-482620C0D954}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{148E490B-06D6-4A0B-A6A7-482620C0D954}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{148E490B-06D6-4A0B-A6A7-482620C0D954}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{148E490B-06D6-4A0B-A6A7-482620C0D954}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

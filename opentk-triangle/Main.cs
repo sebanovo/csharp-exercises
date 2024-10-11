@@ -1,9 +1,13 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using System.Diagnostics;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.IO;
+using System.Drawing;
+using OpenTK.Audio.OpenAL;
+using StbImageSharp;
 
 namespace FirstProgram
 {
@@ -13,35 +17,30 @@ namespace FirstProgram
         private int VertexArrayObject;
         private int ShaderProgram;
         private int ElementBufferObject;
+        private int texture;
+        readonly private Stopwatch _timer;
 
         // Vértices de la letra "T" en 3D
         private readonly float[] vertices = {
-            // Cubo superior (barra horizontal de la "T")
-            -0.5f,  0.8f,  0.0f,  // Vértice 1
-             0.5f,  0.8f,  0.0f,  // Vértice 2
-             0.5f,  1.0f,  0.0f,  // Vértice 3
-            -0.5f,  1.0f,  0.0f,  // Vértice 4
-
-            // Cubo vertical (barra vertical de la "T")
-            -0.1f, -0.5f,  0.0f,  // Vértice 5
-             0.1f, -0.5f,  0.0f,  // Vértice 6
-             0.1f,  0.8f,  0.0f,  // Vértice 7
-            -0.1f,  0.8f,  0.0f,  // Vértice 8
+            // positions       // colors   // textures coords
+            0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,    // top right
+            0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+           -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom left
+           -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
         };
 
         // Índices para formar los triángulos de la letra "T"
         private readonly uint[] indices = {
-            // Barra horizontal superior
-            0, 1, 2,
-            2, 3, 0,
-
-            // Barra vertical
-            4, 5, 6,
-            6, 7, 4,
+            // note that we start from 0!
+            0, 1, 3,  // first Triangle
+            1, 2, 3   // second Triangle
         };
 
         public Game(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
+            _timer = new Stopwatch();
+            _timer.Start();
+            Console.WriteLine("Comenzo el programa");
         }
 
         protected override void OnLoad()
@@ -60,8 +59,34 @@ namespace FirstProgram
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
+
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(1);
+
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+            GL.EnableVertexAttribArray(2);
+
+            // load texture    
+            GL.GenTextures(1, out texture);
+            GL.BindTexture(TextureTarget.Texture2D, texture);
+            // set the texture wrapping/filtering options (on the currently bound texture object)
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            // load texture
+            using (Stream stream = File.OpenRead("./resources/container.jpg"))
+            {
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            }
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, GL.GenTexture());
 
             // Crear el EBO
             ElementBufferObject = GL.GenBuffer();
@@ -97,6 +122,14 @@ namespace FirstProgram
             // Limpiar el buffer de color
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, texture);
+
+            float position = (float)Math.Sin(_timer.Elapsed.TotalSeconds) / 2.0f + 0.5f;
+            int vertexOffSetLocation = GL.GetUniformLocation(ShaderProgram, "xOffSet");
+            GL.UseProgram(ShaderProgram);
+            GL.Uniform1(vertexOffSetLocation, position);
+
             // Dibujar la letra "T"
             GL.UseProgram(ShaderProgram);
             GL.BindVertexArray(VertexArrayObject);
@@ -115,6 +148,28 @@ namespace FirstProgram
             {
                 Close();
             }
+
+            if (KeyboardState.IsKeyPressed(Keys.Q))
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            }
+
+            if (KeyboardState.IsKeyPressed(Keys.W))
+            {
+                GL.PointSize(30);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Point);
+            }
+
+            if (KeyboardState.IsKeyPressed(Keys.E))
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            }
+        }
+
+        protected override void OnResize(ResizeEventArgs e)
+        {
+            base.OnResize(e);
+            GL.Viewport(0, 0, Size.X, Size.Y);
         }
 
         protected override void OnUnload()
@@ -126,6 +181,9 @@ namespace FirstProgram
             GL.DeleteVertexArray(VertexArrayObject);
             GL.DeleteProgram(ShaderProgram);
             GL.DeleteBuffer(ElementBufferObject);
+
+            _timer.Stop();
+            Console.WriteLine("Finalizo el programa");
         }
 
         [STAThread]
@@ -137,10 +195,8 @@ namespace FirstProgram
                 Title = "Letra T en 3D"
             };
 
-            using (Game game = new Game(GameWindowSettings.Default, nativeWindowSettings))
-            {
-                game.Run();
-            }
+            using Game game = new(GameWindowSettings.Default, nativeWindowSettings);
+            game.Run();
         }
     }
 }
