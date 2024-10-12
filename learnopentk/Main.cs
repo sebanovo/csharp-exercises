@@ -15,10 +15,10 @@ namespace FirstProgram
     {
         private int VertexBufferObject;
         private int VertexArrayObject;
-        private int ShaderProgram;
         private int ElementBufferObject;
-        private int texture;
+        private int texture1, texture2;
         readonly private Stopwatch _timer;
+        Shader myShader;
 
         // Vértices de la letra "T" en 3D
         private readonly float[] vertices = {
@@ -40,6 +40,7 @@ namespace FirstProgram
         {
             _timer = new Stopwatch();
             _timer.Start();
+            myShader = new Shader("./resources/vertexshader.vert", "./resources/fragmentshader.frag");
             Console.WriteLine("Comenzo el programa");
         }
 
@@ -68,51 +69,46 @@ namespace FirstProgram
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
             GL.EnableVertexAttribArray(2);
 
+            // Crear el EBO
+            ElementBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
             // load texture    
-            GL.GenTextures(1, out texture);
-            GL.BindTexture(TextureTarget.Texture2D, texture);
+            StbImage.stbi__vertically_flip_on_load_global = 1;
+            GL.GenTextures(1, out texture1);
+            GL.BindTexture(TextureTarget.Texture2D, texture1);
             // set the texture wrapping/filtering options (on the currently bound texture object)
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             // load texture
             using (Stream stream = File.OpenRead("./resources/container.jpg"))
+            {
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlue);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb, image.Width, image.Height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, image.Data);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            }
+
+            GL.GenTextures(1, out texture2);
+            GL.BindTexture(TextureTarget.Texture2D, texture2);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            using (Stream stream = File.OpenRead("./resources/awesomeface.png"))
             {
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
             }
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, GL.GenTexture());
-
-            // Crear el EBO
-            ElementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
-
-            // Cargar y compilar shaders
-            string vertexShaderSource = File.ReadAllText("./resources/shader.vert");
-            string fragmentShaderSource = File.ReadAllText("./resources/shader.frag");
-
-            int vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vertexShader, vertexShaderSource);
-            GL.CompileShader(vertexShader);
-
-            int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, fragmentShaderSource);
-            GL.CompileShader(fragmentShader);
-
-            ShaderProgram = GL.CreateProgram();
-            GL.AttachShader(ShaderProgram, vertexShader);
-            GL.AttachShader(ShaderProgram, fragmentShader);
-            GL.LinkProgram(ShaderProgram);
-
-            // Limpieza
-            GL.DeleteShader(vertexShader);
-            GL.DeleteShader(fragmentShader);
+            myShader.use();
+            myShader.setInt("texture1", 0);
+            myShader.setInt("texture2", 1);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -120,18 +116,20 @@ namespace FirstProgram
             base.OnRenderFrame(args);
 
             // Limpiar el buffer de color
+            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, texture);
+            GL.BindTexture(TextureTarget.Texture2D, texture1);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, texture2);
 
-            float position = (float)Math.Sin(_timer.Elapsed.TotalSeconds) / 2.0f + 0.5f;
-            int vertexOffSetLocation = GL.GetUniformLocation(ShaderProgram, "xOffSet");
-            GL.UseProgram(ShaderProgram);
-            GL.Uniform1(vertexOffSetLocation, position);
+            float position = (float)Math.Sin(_timer.Elapsed.TotalSeconds);
+            myShader.use();
+            myShader.setFloat("xOffSet", position);
+            myShader.setFloat("transparency", Math.Abs(position));
 
-            // Dibujar la letra "T"
-            GL.UseProgram(ShaderProgram);
+            myShader.use();
             GL.BindVertexArray(VertexArrayObject);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
@@ -179,7 +177,6 @@ namespace FirstProgram
             // Liberar recursos
             GL.DeleteBuffer(VertexBufferObject);
             GL.DeleteVertexArray(VertexArrayObject);
-            GL.DeleteProgram(ShaderProgram);
             GL.DeleteBuffer(ElementBufferObject);
 
             _timer.Stop();
@@ -192,7 +189,7 @@ namespace FirstProgram
             var nativeWindowSettings = new NativeWindowSettings()
             {
                 ClientSize = new Vector2i(800, 600),
-                Title = "Letra T en 3D"
+                Title = "LearnOpentk"
             };
 
             using Game game = new(GameWindowSettings.Default, nativeWindowSettings);
