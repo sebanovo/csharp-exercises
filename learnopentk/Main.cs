@@ -13,28 +13,85 @@ namespace FirstProgram
 {
     public class Game : GameWindow
     {
-        private int VertexBufferObject;
-        private int VertexArrayObject;
-        private int ElementBufferObject;
+        // vbo bao ebo 
+        private int VertexBufferObject, VertexArrayObject, ElementBufferObject;
+        // texture
         private int texture1, texture2;
+        // timmer
         readonly private Stopwatch _timer;
-        Shader myShader;
+        // Shader
+        readonly Shader myShader;
+        // camera
+        private Camera camera;
+        private bool _firstMove = true;
+        private Vector2 _lastPos;
+        private double time;
 
         // Vértices de la letra "T" en 3D
-        private readonly float[] vertices = {
-            // positions       // colors   // textures coords
-            0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,    // top right
-            0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
-           -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom left
-           -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
-        };
+        private readonly float[] vertices = [
+          // positions          // colors          // texture coords
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Cara frontal
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Cara trasera
+            0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // Cara izquierda
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // Cara derecha
+            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // Cara inferior
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,  // Cara superior
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+        ];
+
+        Vector3[] cubePositions = [
+            new Vector3(0.0f, 0.0f, 0.0f),
+            new Vector3(2.0f, 5.0f, -15.0f),
+            new Vector3(-1.5f, -2.2f, -2.5f),
+            new Vector3(-3.8f, -2.0f, -12.3f),
+            new Vector3(2.4f, -0.4f, -3.5f),
+            new Vector3(-1.7f, 3.0f, -7.5f),
+            new Vector3(1.3f, -2.0f, -2.5f),
+            new Vector3(1.5f, 2.0f, -2.5f),
+            new Vector3(1.5f, 0.2f, -1.5f),
+            new Vector3(-1.3f, 1.0f, -1.5f),
+        ];
 
         // Índices para formar los triángulos de la letra "T"
-        private readonly uint[] indices = {
+        private readonly uint[] indices = [
             // note that we start from 0!
             0, 1, 3,  // first Triangle
             1, 2, 3   // second Triangle
-        };
+        ];
 
         public Game(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
@@ -48,9 +105,8 @@ namespace FirstProgram
         {
             base.OnLoad();
 
-            // Configurar el color de fondo
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
+            // habilitar 
+            GL.Enable(EnableCap.DepthTest);
             // Crear el VBO
             VertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
@@ -106,34 +162,44 @@ namespace FirstProgram
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
             }
 
-            myShader.use();
-            myShader.setInt("texture1", 0);
-            myShader.setInt("texture2", 1);
+            myShader.Use();
+            myShader.SetInt("texture1", 0);
+            myShader.SetInt("texture2", 1);
+
+            camera = new Camera(Vector3.UnitZ * 10, Size.X / (float)Size.Y);
+            CursorState = CursorState.Grabbed;
         }
 
-        protected override void OnRenderFrame(FrameEventArgs args)
+        protected override void OnRenderFrame(FrameEventArgs e)
         {
-            base.OnRenderFrame(args);
+            base.OnRenderFrame(e);
+            time = 4.0 * e.Time;
 
             // Limpiar el buffer de color
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, texture1);
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, texture2);
 
-            float position = (float)Math.Sin(_timer.Elapsed.TotalSeconds);
-            myShader.use();
-            myShader.setFloat("xOffSet", position);
-            myShader.setFloat("transparency", Math.Abs(position));
+            Matrix4 transform = Matrix4.Identity * Matrix4.CreateRotationZ((float)_timer.Elapsed.TotalSeconds);
 
-            myShader.use();
-            GL.BindVertexArray(VertexArrayObject);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            myShader.SetMat4("projection", camera.GetProjectionMatrix());
+            myShader.SetMat4("view", camera.GetViewMatrix());
+            myShader.SetMat4("transform", transform);
 
+            for (int i = 0; i < cubePositions.Length; i++)
+            {
+                // Matrix4 model = Matrix4.Identity;
+                Matrix4 model = Matrix4.CreateTranslation(cubePositions[i]);
+                model *= Matrix4.CreateFromAxisAngle(new Vector3(1.0f, 0.3f, 0.5f), MathHelper.DegreesToRadians((float)time));
+                myShader.SetMat4("model", model);
+                GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+            }
             // Intercambiar los buffers
+            GL.BindVertexArray(VertexArrayObject);
             SwapBuffers();
         }
 
@@ -141,27 +207,92 @@ namespace FirstProgram
         {
             base.OnUpdateFrame(e);
 
+            if (!IsFocused) return;
+
+            var input = KeyboardState;
+
             // Cerrar la ventana al presionar Escape
             if (KeyboardState.IsKeyDown(Keys.Escape))
             {
                 Close();
             }
-
-            if (KeyboardState.IsKeyPressed(Keys.Q))
+            else if (KeyboardState.IsKeyPressed(Keys.D1))
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             }
-
-            if (KeyboardState.IsKeyPressed(Keys.W))
+            else if (KeyboardState.IsKeyPressed(Keys.D2))
             {
                 GL.PointSize(30);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Point);
             }
-
-            if (KeyboardState.IsKeyPressed(Keys.E))
+            else if (KeyboardState.IsKeyPressed(Keys.D3))
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             }
+
+
+            const float cameraSpeed = 1.5f;
+            const float sensitivity = 0.2f;
+            if (input.IsKeyDown(Keys.W))
+            {
+                camera.Position += camera.Front * cameraSpeed * (float)e.Time; // Forward
+            }
+
+            if (input.IsKeyDown(Keys.S))
+            {
+                camera.Position -= camera.Front * cameraSpeed * (float)e.Time; // Backwards
+            }
+            if (input.IsKeyDown(Keys.A))
+            {
+                camera.Position -= camera.Right * cameraSpeed * (float)e.Time; // Left
+            }
+            if (input.IsKeyDown(Keys.D))
+            {
+                camera.Position += camera.Right * cameraSpeed * (float)e.Time; // Right
+            }
+            if (input.IsKeyDown(Keys.Space))
+            {
+                camera.Position += camera.Up * cameraSpeed * (float)e.Time; // Up
+            }
+            if (input.IsKeyDown(Keys.LeftShift))
+            {
+                camera.Position -= camera.Up * cameraSpeed * (float)e.Time; // Down
+            }
+
+
+            if (input.IsKeyDown(Keys.Space))
+            {
+                camera.Position += camera.Up * cameraSpeed * (float)e.Time; // Up
+            }
+            if (input.IsKeyDown(Keys.LeftShift))
+            {
+                camera.Position -= camera.Up * cameraSpeed * (float)e.Time; // Down
+            }
+
+            // Get the mouse state
+            var mouse = MouseState;
+
+            if (_firstMove) // This bool variable is initially set to true.
+            {
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+                _firstMove = false;
+            }
+
+            else
+            {
+                // Calculate the offset of the mouse position
+                var deltaX = mouse.X - _lastPos.X;
+                var deltaY = mouse.Y - _lastPos.Y;
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+
+                // Apply the camera pitch and yaw (we clamp the pitch in the camera class)
+                camera.Yaw += deltaX * sensitivity;
+                camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
+            }
+        }
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -191,7 +322,6 @@ namespace FirstProgram
                 ClientSize = new Vector2i(800, 600),
                 Title = "LearnOpentk"
             };
-
             using Game game = new(GameWindowSettings.Default, nativeWindowSettings);
             game.Run();
         }

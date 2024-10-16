@@ -1,4 +1,6 @@
+using System.Numerics;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 
 namespace FirstProgram;
 
@@ -35,17 +37,22 @@ public class Shader
         }
     }
 
-    public void use()
+    public void Use()
     {
         GL.UseProgram(ID);
     }
-    public void setInt(string name, int value)
+    public void SetInt(string name, int value)
     {
         GL.Uniform1(GL.GetUniformLocation(ID, name), value);
     }
 
-    public void setFloat(string name, float value)
+    public void SetFloat(string name, float value)
     {
         GL.Uniform1(GL.GetUniformLocation(ID, name), value);
+    }
+
+    public void SetMat4(string name, Matrix4 value)
+    {
+        GL.UniformMatrix4(GL.GetUniformLocation(ID, name), true, ref value);
     }
 }
