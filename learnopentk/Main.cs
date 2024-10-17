@@ -18,13 +18,13 @@ namespace FirstProgram
         // texture
         private int texture1, texture2;
         // timmer
-        readonly private Stopwatch _timer;
+        readonly private Stopwatch timer;
         // Shader
         readonly Shader myShader;
         // camera
         private Camera camera;
-        private bool _firstMove = true;
-        private Vector2 _lastPos;
+        private bool firstMove = true;
+        private Vector2 lastPos;
         private double time;
 
         // Vértices de la letra "T" en 3D
@@ -95,10 +95,13 @@ namespace FirstProgram
 
         public Game(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
-            _timer = new Stopwatch();
-            _timer.Start();
+            timer = new Stopwatch();
+            timer.Start();
             myShader = new Shader("./resources/vertexshader.vert", "./resources/fragmentshader.frag");
             Console.WriteLine("Comenzo el programa");
+            WindowState = WindowState.Maximized;
+            camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnLoad()
@@ -165,9 +168,6 @@ namespace FirstProgram
             myShader.Use();
             myShader.SetInt("texture1", 0);
             myShader.SetInt("texture2", 1);
-
-            camera = new Camera(Vector3.UnitZ * 10, Size.X / (float)Size.Y);
-            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -184,7 +184,7 @@ namespace FirstProgram
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, texture2);
 
-            Matrix4 transform = Matrix4.Identity * Matrix4.CreateRotationZ((float)_timer.Elapsed.TotalSeconds);
+            Matrix4 transform = Matrix4.Identity * Matrix4.CreateRotationZ((float)timer.Elapsed.TotalSeconds);
 
             myShader.SetMat4("projection", camera.GetProjectionMatrix());
             myShader.SetMat4("view", camera.GetViewMatrix());
@@ -192,9 +192,8 @@ namespace FirstProgram
 
             for (int i = 0; i < cubePositions.Length; i++)
             {
-                // Matrix4 model = Matrix4.Identity;
-                Matrix4 model = Matrix4.CreateTranslation(cubePositions[i]);
-                model *= Matrix4.CreateFromAxisAngle(new Vector3(1.0f, 0.3f, 0.5f), MathHelper.DegreesToRadians((float)time));
+                Matrix4 model = Matrix4.Identity * Matrix4.CreateTranslation(cubePositions[i]);
+                model *= Matrix4.CreateFromAxisAngle(new Vector3(1.0f, 0.3f, 0.5f), MathHelper.DegreesToRadians(10.0f * i));
                 myShader.SetMat4("model", model);
                 GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
             }
@@ -272,18 +271,18 @@ namespace FirstProgram
             // Get the mouse state
             var mouse = MouseState;
 
-            if (_firstMove) // This bool variable is initially set to true.
+            if (firstMove) // This bool variable is initially set to true.
             {
-                _lastPos = new Vector2(mouse.X, mouse.Y);
-                _firstMove = false;
+                lastPos = new Vector2(mouse.X, mouse.Y);
+                firstMove = false;
             }
 
             else
             {
                 // Calculate the offset of the mouse position
-                var deltaX = mouse.X - _lastPos.X;
-                var deltaY = mouse.Y - _lastPos.Y;
-                _lastPos = new Vector2(mouse.X, mouse.Y);
+                var deltaX = mouse.X - lastPos.X;
+                var deltaY = mouse.Y - lastPos.Y;
+                lastPos = new Vector2(mouse.X, mouse.Y);
 
                 // Apply the camera pitch and yaw (we clamp the pitch in the camera class)
                 camera.Yaw += deltaX * sensitivity;
@@ -310,7 +309,7 @@ namespace FirstProgram
             GL.DeleteVertexArray(VertexArrayObject);
             GL.DeleteBuffer(ElementBufferObject);
 
-            _timer.Stop();
+            timer.Stop();
             Console.WriteLine("Finalizo el programa");
         }
 
