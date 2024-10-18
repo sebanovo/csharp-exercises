@@ -22,73 +22,59 @@ namespace FirstProgram
         // Shader
         readonly Shader myShader;
         // camera
-        private Camera camera;
+        private readonly Camera camera;
         private bool firstMove = true;
         private Vector2 lastPos;
         private double time;
 
-        // Vértices de la letra "T" en 3D
         private readonly float[] vertices = [
-          // positions          // colors          // texture coords
-            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Cara frontal
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            // positions         // colors         // texture coords
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f,  // Cara trasera
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0625f, 0.0625f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,
+            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0625f * 2,
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f,
 
-            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Cara trasera
-            0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f,  // Cara frontal
+            0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0625f, 0.0625f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,
+            -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0625f * 2,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f,
 
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // Cara izquierda
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0, 0.0625f * 2,  // Cara izquierda
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0625f, 0.0625f * 2,
+            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0625f, 0.0625f,
+            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0625f, 0.0625f,
+            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0625f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0625f * 2,
+
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,  // Cara derecha
+            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f * 2,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0625f,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0625f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0625f, 0.0625f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0625f * 2,
+
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0625f,  // Cara inferior
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0625f, 0.0625f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0625f, 0.0f,
             -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0625f,
 
-            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // Cara derecha
-            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // Cara inferior
-            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,  // Cara superior
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0625f * 3.0f,  // Cara superior
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0625f, 0.0625f * 3.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0625f, 0.0625f * 2.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0625f, 0.0625f * 2.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0625f * 2.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0625f * 3.0f,
         ];
 
-        Vector3[] cubePositions = [
-            new Vector3(0.0f, 0.0f, 0.0f),
-            new Vector3(2.0f, 5.0f, -15.0f),
-            new Vector3(-1.5f, -2.2f, -2.5f),
-            new Vector3(-3.8f, -2.0f, -12.3f),
-            new Vector3(2.4f, -0.4f, -3.5f),
-            new Vector3(-1.7f, 3.0f, -7.5f),
-            new Vector3(1.3f, -2.0f, -2.5f),
-            new Vector3(1.5f, 2.0f, -2.5f),
-            new Vector3(1.5f, 0.2f, -1.5f),
-            new Vector3(-1.3f, 1.0f, -1.5f),
-        ];
-
+        readonly List<Vector3> cubePositions = [];
         // Índices para formar los triángulos de la letra "T"
         private readonly uint[] indices = [
-            // note that we start from 0!
             0, 1, 3,  // first Triangle
             1, 2, 3   // second Triangle
         ];
@@ -97,16 +83,32 @@ namespace FirstProgram
         {
             timer = new Stopwatch();
             timer.Start();
-            myShader = new Shader("./resources/vertexshader.vert", "./resources/fragmentshader.frag");
+            myShader = new Shader("./resources/main.vert", "./resources/main.frag");
             Console.WriteLine("Comenzo el programa");
-            WindowState = WindowState.Maximized;
+            WindowState = WindowState.Normal;
             camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
             CursorState = CursorState.Grabbed;
+
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
+
+            float cubeSize = 1.0f;
+            int gridWidth = 10;
+            int gridHeight = 10;
+            int gridY = 10;
+            for (int z = 0; z < gridHeight; z++)
+            {
+                for (int y = 0; y < gridY; y++)
+                {
+                    for (int x = 0; x < gridWidth; x++)
+                    {
+                        cubePositions.Add(new Vector3(x * cubeSize, -1.5f - y * cubeSize, z * cubeSize));
+                    }
+                }
+            }
 
             // habilitar 
             GL.Enable(EnableCap.DepthTest);
@@ -144,11 +146,12 @@ namespace FirstProgram
             // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             // load texture
-            using (Stream stream = File.OpenRead("./resources/container.jpg"))
+            using (Stream stream = File.OpenRead("./resources/texture.png"))
             {
-                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlue);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb, image.Width, image.Height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, image.Data);
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             }
 
             GL.GenTextures(1, out texture2);
@@ -190,10 +193,9 @@ namespace FirstProgram
             myShader.SetMat4("view", camera.GetViewMatrix());
             myShader.SetMat4("transform", transform);
 
-            for (int i = 0; i < cubePositions.Length; i++)
+            for (int i = 0; i < cubePositions.Count; i++)
             {
-                Matrix4 model = Matrix4.Identity * Matrix4.CreateTranslation(cubePositions[i]);
-                model *= Matrix4.CreateFromAxisAngle(new Vector3(1.0f, 0.3f, 0.5f), MathHelper.DegreesToRadians(10.0f * i));
+                Matrix4 model = Matrix4.Identity * Matrix4.CreateTranslation(cubePositions.ToArray()[i]);
                 myShader.SetMat4("model", model);
                 GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
             }
