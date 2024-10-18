@@ -15,9 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources/**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="resources\main.vert" />
+    <EmbeddedResource Include="resources\main.frag" />
+    <EmbeddedResource Include="resources\texture.png" />
+    <EmbeddedResource Include="resources\container.jpg" />
+    <EmbeddedResource Include="resources\awesomeface.png" />
   </ItemGroup>
 
 </Project>

@@ -1,19 +1,20 @@
 using System.Numerics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using System.Reflection;
 
 namespace FirstProgram;
 
 public class Shader
 {
     public int ID;
-    public Shader(string vertexPath, string fragmentPath)
+    public Shader(string vertexResourceName, string fragmentResourceName)
     {
         string vertexCode, fragmentCode;
         try
         {
-            vertexCode = File.ReadAllText(vertexPath);
-            fragmentCode = File.ReadAllText(fragmentPath);
+            vertexCode = LoadEmbeddedShader(vertexResourceName);
+            fragmentCode = LoadEmbeddedShader(fragmentResourceName);
 
             int vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(vertexShader, vertexCode);
@@ -35,6 +36,14 @@ public class Shader
         {
             Console.Write(e.Message);
         }
+    }
+
+    private string LoadEmbeddedShader(string resourceName)
+    {
+
+        using Stream? stream = (Assembly.GetExecutingAssembly()?.GetManifestResourceStream(resourceName)) ?? throw new Exception($"Shader resource {resourceName} not found.");
+        using StreamReader reader = new(stream);
+        return reader.ReadToEnd();
     }
 
     public void Use()

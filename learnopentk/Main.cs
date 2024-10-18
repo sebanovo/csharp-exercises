@@ -8,6 +8,7 @@ using System.IO;
 using System.Drawing;
 using OpenTK.Audio.OpenAL;
 using StbImageSharp;
+using System.Reflection;
 
 namespace FirstProgram
 {
@@ -83,12 +84,11 @@ namespace FirstProgram
         {
             timer = new Stopwatch();
             timer.Start();
-            myShader = new Shader("./resources/main.vert", "./resources/main.frag");
+            myShader = new Shader("FirstProgram.resources.main.vert", "FirstProgram.resources.main.frag");
             Console.WriteLine("Comenzo el programa");
-            WindowState = WindowState.Normal;
+            WindowState = WindowState.Maximized;
             camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
             CursorState = CursorState.Grabbed;
-
         }
 
         protected override void OnLoad()
@@ -139,14 +139,8 @@ namespace FirstProgram
             StbImage.stbi__vertically_flip_on_load_global = 1;
             GL.GenTextures(1, out texture1);
             GL.BindTexture(TextureTarget.Texture2D, texture1);
-            // set the texture wrapping/filtering options (on the currently bound texture object)
-            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
             // load texture
-            using (Stream stream = File.OpenRead("./resources/texture.png"))
+            using (Stream? stream = Assembly.GetExecutingAssembly()?.GetManifestResourceStream("FirstProgram.resources.texture.png"))
             {
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
@@ -161,7 +155,7 @@ namespace FirstProgram
             // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             // GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            using (Stream stream = File.OpenRead("./resources/awesomeface.png"))
+            using (Stream? stream = Assembly.GetExecutingAssembly()?.GetManifestResourceStream("FirstProgram.resources.awesomeface.png"))
             {
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
